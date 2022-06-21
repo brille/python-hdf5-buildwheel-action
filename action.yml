@@ -4,9 +4,6 @@ inputs:
   os:
     required: true
     description: The runner operating system
-  platform:
-    required: true
-    description: The, e.g., platform to target
   arch:
     required: true
     description: The targeted architecture
@@ -76,7 +73,14 @@ runs:
         working-directory: wrap/tests
         run: python -m unittest
       -
+        name: Set artifact name
+        id: artifact-name
+        shell: bash
+        run: echo "::set-output name=value::${{ inputs.python-version }}-${INPUTS_PLATFORM:0:3}_${{ inputs.arch }}"
+        env:
+          INPUTS_PLATFORM: ${{ inputs.os }}
+      -
         uses: actions/upload-artifact@v2
         with:
-          name: "${{ inputs.python-version }}-${{ inputs.platform }}_${{ inputs.arch }}"
+          name: ${{ steps.artifact-name.outputs.value }}
           path: dist/*.whl
