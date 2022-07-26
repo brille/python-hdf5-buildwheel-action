@@ -10,66 +10,58 @@ inputs:
   python-version:
     required: true
     description: The Python version to use
+  environment-file:
+    required: true
+    description: The micromamba environment configuration file
+  environment-name:
+    required: true
+    description: The name of the micromamba environment, in the config file
+
+defaults:
+  run:
+    shell: bash -l {0}
 
 runs:
   using: "composite"
   steps:
       -
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: ${{ inputs.python-version }}
-          activate-environment: env
-          channels: conda-forge,defaults
-          mamba-version: "*"
-      -
-        if: startsWith(inputs.os, 'windows')
-        shell: bash -l {0}
-        run: mamba install hdf5 numpy cmake
-      -
-        if: startsWith(inputs.os, 'macos')
-        shell: bash -l {0}
-        run: |
-          mamba install llvm-openmp==11.1.0 numpy cmake
-          brew install rename hdf5
-      -
-        name: Update python tools
-        shell: bash -l {0}
-        run: python -m pip install --upgrade pip setuptools setuptools_scm wheel
-      -
-        if: startsWith(inputs.os, 'windows')
-        shell: bash -l {0}
-        run: python -m pip install --upgrade delvewheel
-      -
-        if: startsWith(inputs.os, 'macos')
-        shell: bash -l {0}
-        run: python -m pip install --upgrade delocate
-      -
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       -
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          micromamba-version: 0.23.0
+          cache-env: true
+          environment-file: ${{ inputs.environment-file }}
+          extra-specs: python=${{ inputs.python-version }}
+      -
+        name: Update python tools
+        run: python -m pip install --upgrade pip setuptools setuptools_scm wheel
+      -
+        if: startsWith(inputs.os, 'windows')
+        run: python -m pip install --upgrade delvewheel
+      -
+        if: startsWith(inputs.os, 'macos')
+        run: python -m pip install --upgrade delocate
+      -
         name: Build the wheel
-        shell: bash -l {0}
         run: python -m pip wheel --no-deps -w wheelhouse .
       -
         if: startsWith(inputs.os, 'windows')
         name: Fix the (windows) wheel
-        shell: bash -l {0}
         run: delvewheel repair -w dist -v wheelhouse/*.whl
       -
         if: startsWith(inputs.os, 'macos')
         name: Fix & rename the (macOS) wheel
-        shell: bash -l {0}
         run: |
-          DYLD_LIBRARY_PATH=/usr/local/miniconda/envs/env/lib delocate-wheel -w dist -v wheelhouse/*.whl
+          DYLD_LIBRARY_PATH=/usr/local/miniconda/envs/${{ input.environment-name }}/lib delocate-wheel -w dist -v wheelhouse/*.whl
           rename -e 's/10_15/10_13/' dist/*.whl
       -
         name: Install the wheel
-        shell: bash -l {0}
         run: python -m pip install dist/*.whl
       -
         name: Test installed wheel
-        shell: bash -l {0}
         working-directory: wrap/tests
         run: python -m unittest
       -
