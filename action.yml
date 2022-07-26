@@ -17,10 +17,6 @@ inputs:
     required: true
     description: The name of the micromamba environment, in the config file
 
-defaults:
-  run:
-    shell: bash -l {0}
-
 runs:
   using: "composite"
   steps:
@@ -37,31 +33,39 @@ runs:
           extra-specs: python=${{ inputs.python-version }}
       -
         name: Update python tools
+        shell: bash -l {0}
         run: python -m pip install --upgrade pip setuptools setuptools_scm wheel
       -
         if: startsWith(inputs.os, 'windows')
+        shell: bash -l {0}
         run: python -m pip install --upgrade delvewheel
       -
         if: startsWith(inputs.os, 'macos')
+        shell: bash -l {0}
         run: python -m pip install --upgrade delocate
       -
         name: Build the wheel
+        shell: bash -l {0}
         run: python -m pip wheel --no-deps -w wheelhouse .
       -
         if: startsWith(inputs.os, 'windows')
+        shell: bash -l {0}
         name: Fix the (windows) wheel
         run: delvewheel repair -w dist -v wheelhouse/*.whl
       -
         if: startsWith(inputs.os, 'macos')
+        shell: bash -l {0}
         name: Fix & rename the (macOS) wheel
         run: |
           DYLD_LIBRARY_PATH=/usr/local/miniconda/envs/${{ input.environment-name }}/lib delocate-wheel -w dist -v wheelhouse/*.whl
           rename -e 's/10_15/10_13/' dist/*.whl
       -
         name: Install the wheel
+        shell: bash -l {0}
         run: python -m pip install dist/*.whl
       -
         name: Test installed wheel
+        shell: bash -l {0}
         working-directory: wrap/tests
         run: python -m unittest
       -
