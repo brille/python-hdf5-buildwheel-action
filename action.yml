@@ -57,7 +57,7 @@ runs:
         shell: bash -l {0}
         name: Fix & rename the (macOS) wheel
         run: |
-          DYLD_LIBRARY_PATH=/usr/local/miniconda/envs/${{ input.environment-name }}/lib delocate-wheel -w dist -v wheelhouse/*.whl
+          DYLD_LIBRARY_PATH=/usr/local/miniconda/envs/${{ inputs.environment-name }}/lib delocate-wheel -w dist -v wheelhouse/*.whl
           rename -e 's/10_15/10_13/' dist/*.whl
       -
         name: Install the wheel
