@@ -60,15 +60,6 @@ runs:
           DYLD_LIBRARY_PATH=/usr/local/miniconda/envs/${{ inputs.environment-name }}/lib delocate-wheel -w dist -v wheelhouse/*.whl
           rename -e 's/10_15/10_13/' dist/*.whl
       -
-        name: Install the wheel
-        shell: bash -l {0}
-        run: python -m pip install dist/*.whl
-      -
-        name: Test installed wheel
-        shell: bash -l {0}
-        working-directory: wrap/tests
-        run: python -m unittest
-      -
         name: Set artifact name
         id: artifact-name
         shell: bash
@@ -80,3 +71,12 @@ runs:
         with:
           name: ${{ steps.artifact-name.outputs.value }}
           path: dist/*.whl
+      -
+        name: Install the wheel
+        shell: bash -l {0}
+        run: python -m pip install dist/*.whl
+      -
+        name: Test installed wheel
+        shell: bash -l {0}
+        working-directory: wrap/tests
+        run: python -m unittest
