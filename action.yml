@@ -63,7 +63,7 @@ runs:
         name: Set artifact name
         id: artifact-name
         shell: bash
-        run: echo "::set-output name=value::${{ inputs.python-version }}-${INPUTS_PLATFORM:0:3}_${{ inputs.arch }}"
+        run: echo "value=${{ inputs.python-version }}-${INPUTS_PLATFORM:0:3}_${{ inputs.arch }}" >> $GITHUB_OUTPUT
         env:
           INPUTS_PLATFORM: ${{ inputs.os }}
       -
