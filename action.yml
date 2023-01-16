@@ -67,7 +67,7 @@ runs:
         env:
           INPUTS_PLATFORM: ${{ inputs.os }}
       -
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.artifact-name.outputs.value }}
           path: dist/*.whl
